@@ -92,17 +92,26 @@ table 50107 "Seminar"
         }
     }
 
-    var
-        myInt: Integer;
-
     trigger OnInsert()
+    var
+        SeminarSetupRec: Record "Seminar Setup";
+        SeminarNo: Code[20];
     begin
+        if "No." = '' then begin
+            if SeminarSetupRec.GET then begin
+                SeminarNo := SeminarSetupRec."Seminar Nos.";
+                if SeminarNo <> '' then begin
+                    // Get the next number from the number series
+                    "No." := SeminarNo;
+                end;
+            end;
+        end;
 
     end;
 
     trigger OnModify()
     begin
-
+        "Last Date Modified" := Today;
     end;
 
     trigger OnDelete()
@@ -112,6 +121,7 @@ table 50107 "Seminar"
 
     trigger OnRename()
     begin
+        "Last Date Modified" := Today;
 
     end;
 
