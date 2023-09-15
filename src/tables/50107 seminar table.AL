@@ -12,16 +12,33 @@ table 50107 "Seminar"
         {
             DataClassification = CustomerContent;
             Caption = 'No.';
+            trigger OnValidate()
+            begin
+                IF "No." <> xRec."No." THEN BEGIN
+                    SeminarSetup.GET;
+                    NoSeriesMgt.TestManual(SeminarSetup."Seminar Nos.");
+                    "No. Series" := '';
+                END;
+            end;
+
         }
-        field(2; "Name"; Code[50])
+        field(2; "Name"; Code[100])
         {
             DataClassification = CustomerContent;
             Caption = 'Name';
+            trigger OnValidate()
+            begin
+                IF ("Search Name" = UPPERCASE(xRec.Name)) OR ("Search Name" = '') THEN BEGIN
+                    "Search Name" := Name;
+                END;
+
+            end;
         }
         field(3; "Seminar Duration"; Decimal)
         {
             DataClassification = CustomerContent;
             Caption = 'Seminar Duration';
+            DecimalPlaces = 0 : 1;
         }
         field(4; "Minimum Participants"; Integer)
         {
@@ -37,6 +54,7 @@ table 50107 "Seminar"
         {
             DataClassification = CustomerContent;
             Caption = 'Search Name';
+
         }
         field(7; "Blocked"; Boolean)
         {
@@ -55,7 +73,7 @@ table 50107 "Seminar"
             Caption = 'Comment';
             Editable = false;
             FieldClass = FlowField;
-            CalcFormula = exist("Comment Line" where("Table Name" = const(Seminar)));
+            CalcFormula = exist("Comment Line" where("Table Name" = const(Seminar), "No." = field("No.")));
         }
 
         field(10; "Seminar Price"; Decimal)
@@ -68,6 +86,16 @@ table 50107 "Seminar"
             Caption = 'Gen. Prod. Posting Group';
             DataClassification = CustomerContent;
             TableRelation = "Gen. Product Posting Group";
+
+            trigger OnValidate()
+            begin
+                IF xRec."Gen. Prod. Posting Group" <> "Gen. Prod. Posting Group" THEN BEGIN
+                    IF GenProdPostingGroup.ValidateVatProdPostingGroup(GenProdPostingGroup, "Gen. Prod. Posting Group") THEN BEGIN
+                        VALIDATE("VAT Prod. Posting Group", GenProdPostingGroup."Def. VAT Prod. Posting Group");
+                    END;
+                END;
+
+            end;
         }
         field(12; "VAT Prod. Posting Group"; Code[10])
         {
@@ -92,20 +120,22 @@ table 50107 "Seminar"
         }
     }
 
-    trigger OnInsert()
     var
-        SeminarSetupRec: Record "Seminar Setup";
-        SeminarNo: Code[20];
+        SeminarSetup: Record "Seminar Setup";
+        CommentLine: Record "Comment Line";
+        Seminar: Record "Seminar";
+        GenProdPostingGroup: Record "Gen. Product Posting Group";
+        NoSeriesMgt: Codeunit "NoSeriesManagement";
+
+
+    trigger OnInsert()
     begin
-        if "No." = '' then begin
-            if SeminarSetupRec.GET then begin
-                SeminarNo := SeminarSetupRec."Seminar Nos.";
-                if SeminarNo <> '' then begin
-                    // Get the next number from the number series
-                    "No." := SeminarNo;
-                end;
-            end;
-        end;
+        IF "No." = '' THEN BEGIN
+            "SeminarSetup".GET;
+            SeminarSetup.TESTFIELD("Seminar Nos.");
+            NoSeriesMgt.InitSeries(SeminarSetup."Seminar Nos.", xRec."No. Series", 0D, "No.", "No. Series");
+        END;
+
 
     end;
 
@@ -116,6 +146,11 @@ table 50107 "Seminar"
 
     trigger OnDelete()
     begin
+        CommentLine.RESET;
+        CommentLine.SETRANGE("Table Name", CommentLine."Table Name"::Seminar);
+        CommentLine.SETRANGE("No.", "No.");
+        CommentLine.DELETEALL;
+
 
     end;
 
@@ -124,5 +159,19 @@ table 50107 "Seminar"
         "Last Date Modified" := Today;
 
     end;
+
+    procedure AssistEdit(): Boolean
+
+    begin
+        Seminar := Rec;
+        SeminarSetup.Get;
+        SeminarSetup.TestField("Seminar Nos.");
+        IF NoSeriesMgt.SelectSeries(SeminarSetup."Seminar Nos.", xRec."No. Series", "No. Series") THEN BEGIN
+            NoSeriesMgt.SetSeries("No.");
+            Rec := Seminar;
+            EXIT(TRUE);
+        END;
+    END;
+
 
 }

@@ -8,41 +8,29 @@ table 50106 "Seminar Setup"
 
     fields
     {
-        field(1; "Primary Key"; code[10])
+        field(1; "Primary Key"; code[20])
         {
             DataClassification = CustomerContent;
             Caption = 'Primary Key';
         }
-        field(2; "Seminar Nos."; Code[10])
+        field(2; "Seminar Nos."; Code[20])
         {
             DataClassification = CustomerContent;
             Caption = 'Seminar Nos.';
             TableRelation = "No. Series";
         }
-        field(3; "Seminar Registration Nos."; Code[10])
+        field(3; "Seminar Registration Nos."; Code[20])
         {
             DataClassification = CustomerContent;
             Caption = 'Seminar Registration Nos.';
             TableRelation = "No. Series";
         }
-        field(4; "Posted Seminar Reg. Nos."; Code[10])
+        field(4; "Posted Seminar Reg. Nos."; Code[20])
         {
             Caption = 'Posted Seminar Reg. Nos.';
             TableRelation = "No. Series";
             DataClassification = CustomerContent;
 
-        }
-        field(5; EnableNewsletter; option)
-        {
-            OptionMembers = " ","Full","Limitted";
-            OptionCaption = ' ,Full,Limitted';
-            Caption = 'Enables Newsletter';
-            DataClassification = CustomerContent;
-        }
-        field(6; FreeGiftAvailable; Boolean)
-        {
-            DataClassification = CustomerContent;
-            Caption = 'Free Gifts Available';
         }
     }
 

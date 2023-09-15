@@ -2,28 +2,28 @@
 
 page 50105 "Seminars"
 {
-    PageType = List;
+    PageType = Card;
     ApplicationArea = All;
-    UsageCategory = Lists;
     SourceTable = "Seminar Setup";
     Caption = 'Seminar Setup';
+    UsageCategory = Administration;
+    //InsertAllowed = false;
+    DeleteAllowed = false;
 
     layout
     {
         area(Content)
         {
-            repeater(GroupNamAe)
-            {
-                field("Primary Key"; Rec."Primary Key")
-                {
-                    ApplicationArea = All;
 
-                }
+            group("Number series")
+            {
+
                 field("Seminar Nos."; Rec."Seminar Nos.")
                 {
                     ApplicationArea = All;
 
                 }
+
                 field("Seminar Registration Nos."; Rec."Seminar Registration Nos.")
                 {
                     ApplicationArea = All;
@@ -36,6 +36,7 @@ page 50105 "Seminars"
                 }
 
             }
+
         }
         area(Factboxes)
         {
@@ -58,4 +59,8 @@ page 50105 "Seminars"
             }
         }
     }
+    trigger OnOpenPage()
+    begin
+        if NOT Rec.FINDFIRST THEN Rec.INSERT;
+    end;
 }
